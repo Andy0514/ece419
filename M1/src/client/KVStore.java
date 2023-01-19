@@ -1,5 +1,6 @@
 package client;
 
+import org.apache.log4j.Logger;
 import shared.messages.KVMessage;
 
 public class KVStore implements KVCommInterface {
@@ -8,13 +9,24 @@ public class KVStore implements KVCommInterface {
 	 * @param address the address of the KVServer
 	 * @param port the port of the KVServer
 	 */
-	public KVStore(String address, int port) {
-		// TODO Auto-generated method stub
+	
+	private Logger logger = Logger.getRootLogger();
+	private Socket clientSocket;
+	private OutputStream output;
+	private InputStream input;
+
+	private boolean running = false;
+
+
+	 
+	public KVStore(String address, int port) throws UnknownHostException, IOException {
+		clientSocket = new Socket(address, port);
+		logger.info("Connection established with server {}, port {}", address, port);
 	}
 
 	@Override
 	public void connect() throws Exception {
-		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
