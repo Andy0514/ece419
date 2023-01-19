@@ -2,7 +2,12 @@ package client;
 
 import shared.messages.KVMessage;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
+
 public interface KVCommInterface {
+
+	public enum SocketStatus {CONNECTED, DISCONNECTED, CONNECTION_LOST};
 
 	/**
 	 * Establishes a connection to the KV Server.
@@ -10,12 +15,13 @@ public interface KVCommInterface {
 	 * @throws Exception
 	 *             if connection could not be established.
 	 */
-	public void connect() throws Exception;
+	public void connect() throws UnknownHostException, IOException;
 
 	/**
 	 * disconnects the client from the currently connected server.
 	 */
 	public void disconnect();
+
 
 	/**
 	 * Inserts a key-value pair into the KVServer.
@@ -42,4 +48,10 @@ public interface KVCommInterface {
 	 *             KV server).
 	 */
 	public KVMessage get(String key) throws Exception;
+
+	/**
+	 * Retrieves the status of the communication module, whether it is connected and running or not
+	 * @return the value
+	 */
+	public boolean isRunning();
 }
