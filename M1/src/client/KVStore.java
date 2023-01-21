@@ -102,8 +102,8 @@ public class KVStore extends Thread implements KVCommInterface {
 	@Override
 	public KVMessage put(String key, String value) throws Exception {
 		// wait for KVMessage implementation
-		KVMessageImpl newMessage = new KVMessageImpl(key, value);
-		newMessage.setStatus(KVMessage.StatusType.PUT);
+		KVMessageImpl newMessage = new KVMessageImpl(key, value, KVMessage.StatusType.PUT);
+//		newMessage.setStatus(KVMessage.StatusType.PUT);
 		byte[] messageBytes = newMessage.getMsgBytes();
 		output.write(messageBytes, 0, messageBytes.length);
 		output.flush();
@@ -116,8 +116,8 @@ public class KVStore extends Thread implements KVCommInterface {
 
 	@Override
 	public KVMessage get(String key) throws Exception {
-		KVMessageImpl newMessage = new KVMessageImpl(key, "");
-		newMessage.setStatus(KVMessage.StatusType.GET);
+		KVMessageImpl newMessage = new KVMessageImpl(key, "", KVMessage.StatusType.GET);
+//		newMessage.setStatus(KVMessage.StatusType.GET);
 		byte[] messageBytes = newMessage.getMsgBytes();
 		output.write(messageBytes, 0, messageBytes.length);
 		output.flush();
