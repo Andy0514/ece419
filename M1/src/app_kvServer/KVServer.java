@@ -3,13 +3,15 @@ package app_kvServer;
 import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import server.ClientConnection;
-import server.Server;
 
 import java.io.IOException;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.InetAddress;
+import java.net.*;
+
+import IKVServer.CacheStrategy;
 
 public class KVServer extends Thread implements IKVServer {
 	/**
@@ -24,7 +26,7 @@ public class KVServer extends Thread implements IKVServer {
 	 */
 	private int port;
 	private int cacheSize;
-	private String strategy;
+	private CacheStrategy cacheStrategy;
 
 	/**
 	 * @param logger logger for the server.
@@ -41,33 +43,40 @@ public class KVServer extends Thread implements IKVServer {
 		// TODO Auto-generated method stub
 		this.port = port;
 		this.cacheSize = cacheSize;
-		this.strategy = strategy;
+		this.cacheStrategy = IKVServer.CacheStrategy.valueOf(strategy);
+		// There are four cache startegy in IKVServer.java,
+		// None, LRU, LFU, FIFO
 	}
 
 	@Override
 	public int getPort(){
 		// TODO Auto-generated method stub
 		return this.port;
-//		return -1;
 	}
 
 	@Override
     public String getHostname(){
 		// TODO Auto-generated method stub
-		return null;
+		try {
+			String hostName = InetAddress.getLocalHost().getHostName();
+			return hostName;
+		} catch (UnknownHostException e) {
+			logger.error("Local host name cannot be resolved into an address!");
+			return null;
+		}
 	}
 
 	@Override
     public CacheStrategy getCacheStrategy(){
 		// TODO Auto-generated method stub
-		return IKVServer.CacheStrategy.None;
+		return this.cacheStrategy;
+//		return this.cacheStrategy;
 	}
 
 	@Override
     public int getCacheSize(){
 		// TODO Auto-generated method stub
 		return this.cacheSize;
-//		return -1;
 	}
 
 	@Override
@@ -118,7 +127,7 @@ public class KVServer extends Thread implements IKVServer {
 		}
 	}
 
-	private boolean isRunning() { return this.running;}
+	private boolean isRunning() { return this.running; }
 
 	@Override
     public void run(){
