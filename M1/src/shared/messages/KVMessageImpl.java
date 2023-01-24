@@ -12,7 +12,7 @@ public class KVMessageImpl implements KVMessage, Serializable {
     private String key;
     private String value;
     private byte[] msgBytes;
-    private static final char LINE_FEED = 0x0A;
+//    private static final char LINE_FEED = 0x0A;
     private static final char RETURN = 0x0D;
     private static final int BUFFER_SIZE = 1024;
     private static final int DROP_SIZE = 1024 * BUFFER_SIZE;
@@ -34,7 +34,7 @@ public class KVMessageImpl implements KVMessage, Serializable {
     public KVMessageImpl(InputStream socket_in) throws IOException {
 
         int index = 0;
-        byte[] tmp = null;
+        byte[] tmp;
         byte[] bufferBytes = new byte[BUFFER_SIZE];
         msgBytes = new byte[4];
         /* read first char from stream */
@@ -75,13 +75,16 @@ public class KVMessageImpl implements KVMessage, Serializable {
         tmp = new byte[keyBytes.length + msgBytes.length];
         System.arraycopy(msgBytes, 0, tmp, 0, msgBytes.length);
         System.arraycopy(keyBytes, 0, tmp, msgBytes.length, keyBytes.length);
-
+        tmp = addCtrChars(tmp);
+        msgBytes = tmp;
 
         /* =================read value from stream=============== */
         read = (byte) socket_in.read();
         boolean reading = true;
         readCount = 0;
         byte[] valBytes = null;
+        bufferBytes = new byte[BUFFER_SIZE];
+        index = 0;
         while(readCount < valLength && reading) {/* read the key until carriage return */
             /* if buffer filled, copy to msg array */
             if(index == BUFFER_SIZE) {
@@ -131,9 +134,12 @@ public class KVMessageImpl implements KVMessage, Serializable {
 
         value = new String(tmp);
 
-        tmp = new byte[valBytes.length + msgBytes.length];
-        System.arraycopy(msgBytes, 0, tmp, 0, msgBytes.length);
-        System.arraycopy(valBytes, 0, tmp, msgBytes.length, valBytes.length);
+        byte[] tmp2 = new byte[tmp.length + msgBytes.length];
+        System.arraycopy(msgBytes, 0, tmp2, 0, msgBytes.length);
+        System.arraycopy(tmp, 0, tmp2, msgBytes.length, tmp.length);
+        tmp2 = addCtrChars(tmp2);
+        msgBytes = tmp2;
+
 
         /* ===============read status ==============*/
         read = (byte) socket_in.read();
@@ -146,6 +152,7 @@ public class KVMessageImpl implements KVMessage, Serializable {
         tmp = Arrays.copyOf(msgBytes, msgBytes.length + 1);
         tmp[tmp.length - 1] = read;
         msgBytes = tmp;
+        msgBytes = addCtrChars(msgBytes);
 
     }
 
@@ -176,7 +183,7 @@ public class KVMessageImpl implements KVMessage, Serializable {
         this.value = value;
     }
     private byte[] addCtrChars(byte[] bytes) {
-        byte[] ctrBytes = new byte[]{LINE_FEED, RETURN};
+        byte[] ctrBytes = new byte[]{RETURN};
         byte[] tmp = new byte[bytes.length + ctrBytes.length];
 
         System.arraycopy(bytes, 0, tmp, 0, bytes.length);
@@ -188,6 +195,7 @@ public class KVMessageImpl implements KVMessage, Serializable {
     /*
     * msgByteArray:
     * keyLength + valueLength + keyBytes + ctrBytes + valueBytes + ctrBytes + statusBytes + ctrBytes
+    *  1 byte   +   3 bytes   +  ..      +   1 byte  + ...       +   1 byte +   1 byte    +   1 byte
     */
     private byte[] toByteArray(String k, String v, StatusType s){
         byte[] keyLength = new byte[]{(byte)(k.length() & 0xFF)}; // k.length <= 20, 1 byte

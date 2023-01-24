@@ -33,8 +33,8 @@ public class AdditionalTest extends TestCase {
 	@Test
 	public void testCreateMessage() throws Exception {
 		KVMessageImpl newMessage = new KVMessageImpl("key", "value", KVMessage.StatusType.PUT);
-		assertTrue(newMessage.getKey() == "key");
-		assertTrue(newMessage.getValue() == "value");
+		assertTrue(newMessage.getKey().equals("key"));
+		assertTrue(newMessage.getValue().equals("value"));
 		assertTrue(newMessage.getStatus() == KVMessage.StatusType.PUT);
 		System.out.println(newMessage.getMsgBytes());
 	}
@@ -42,12 +42,34 @@ public class AdditionalTest extends TestCase {
 	@Test
 	public void testCreateMessageFromStream() throws Exception {
 		KVMessageImpl newMessage = new KVMessageImpl("key", "value", KVMessage.StatusType.PUT);
+//		byte[] keyBytes = "key".getBytes();
+//		System.out.println("key: ");
+//		for(byte b:keyBytes){
+//			System.out.print(b + " ");
+//		}
+//		System.out.println("\nvalue: ");
+//		byte[] valueBytes = "value".getBytes();
+//		for(byte b:valueBytes){
+//			System.out.print(b + " ");
+//		}
 		byte[] byteArray = newMessage.getMsgBytes();
+//		System.out.println("\nmsg: ");
+//		for(byte b:byteArray){
+//			System.out.print(b + " ");
+//		}
 		InputStream targetStream = new ByteArrayInputStream(byteArray);
 		KVMessageImpl secondMessage = new KVMessageImpl(targetStream);
-		assertTrue(newMessage.getKey() == "key");
-		assertTrue(newMessage.getValue() == "value");
+//		byte[] byteArray2 = secondMessage.getMsgBytes();
+//		System.out.println("\nmsg2: ");
+//		for(byte b:byteArray2){
+//			System.out.print(b + " ");
+//		}
+		assertTrue(newMessage.getKey().equals("key"));
+		assertTrue(newMessage.getValue().equals("value"));
 		assertTrue(newMessage.getStatus() == KVMessage.StatusType.PUT);
+		assertTrue(secondMessage.getKey().equals("key"));
+		assertTrue(secondMessage.getValue().equals("value"));
+		assertTrue(secondMessage.getStatus() == KVMessage.StatusType.PUT);
 		assertTrue(java.util.Arrays.equals(newMessage.getMsgBytes(), secondMessage.getMsgBytes()));
 	}
 
