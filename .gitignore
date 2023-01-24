@@ -1,6 +1,9 @@
 pat.txt
 .DS_Store
 .idea
-.iml
+*.iml
 .idea
 M1/.idea
+bin/
+*.jar
+out/
