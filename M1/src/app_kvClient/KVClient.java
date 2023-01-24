@@ -1,9 +1,8 @@
 package app_kvClient;
 
-import client.Client;
 import client.KVCommInterface;
 import client.KVStore;
-import logging.LogSetup;
+import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import shared.messages.KVMessage;
