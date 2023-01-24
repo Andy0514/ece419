@@ -125,8 +125,13 @@ public class KVClient implements IKVClient {
                 printError("Get failed - you must enter get command using 'get <key>'");
             }
         } else if(tokens[0].equals("disconnect")) {
-            store.disconnect();
-            store = null;
+            if (store == null) {
+                logger.error("Attempting to disconnect when you were never connected");
+                printError("Disconnect failed - you were never connected");
+            } else {
+                store.disconnect();
+                store = null;
+            }
         } else if(tokens[0].equals("logLevel")) {
             if(tokens.length == 2) {
                 String level = setLevel(tokens[1]);
@@ -207,17 +212,17 @@ public class KVClient implements IKVClient {
         sb.append(PROMPT).append("put <key> <value>");
         sb.append("\t\t inserts a key-value pair into the storage server \n");
         sb.append(PROMPT).append("get <key>");
-        sb.append("\t\t retrieves the value corresponding to the key in the storage server \n");
+        sb.append("\t\t\t\t retrieves the value corresponding to the key in the storage server \n");
         sb.append(PROMPT).append("disconnect");
         sb.append("\t\t\t disconnects from the server \n");
 
         sb.append(PROMPT).append("logLevel");
-        sb.append("\t\t\t changes the logLevel \n");
+        sb.append("\t\t\t\t changes the logLevel. Choose one from the following: \n");
         sb.append(PROMPT).append("\t\t\t\t ");
         sb.append("ALL | DEBUG | INFO | WARN | ERROR | FATAL | OFF \n");
 
         sb.append(PROMPT).append("quit ");
-        sb.append("\t\t\t exits the program");
+        sb.append("\t\t\t\t\t exits the program");
         System.out.println(sb.toString());
     }
 
@@ -230,7 +235,7 @@ public class KVClient implements IKVClient {
 
     public static void main(String[] args) {
         try {
-            new LogSetup("logs/client.log", Level.OFF);
+            new LogSetup("logs/client.log", Level.ALL);
             KVClient client_app = new KVClient();
             client_app.run();
         } catch (IOException e) {

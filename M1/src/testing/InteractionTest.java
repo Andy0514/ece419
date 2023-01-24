@@ -13,6 +13,7 @@ public class InteractionTest extends TestCase {
 	private KVStore kvClient;
 	
 	public void setUp() {
+		// These tests assume you have a client set up at localhost 50000
 		kvClient = new KVStore("localhost", 50000);
 		try {
 			kvClient.connect();
