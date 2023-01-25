@@ -2,6 +2,10 @@ package app_kvServer.cache;
 import java.util.*;
 
 class LRUNode {
+    LRUNode(String v, LLNode ref) {
+        val = v;
+        refToInsertionNode = ref;
+    }
     String val;
     LLNode refToInsertionNode;
 }
@@ -46,10 +50,8 @@ public class LRUCache extends ICache {
                 values.remove(toBeEvicted);
                 currentSize -= 1;
             }
-            LRUNode newLRUNode = new LRUNode();
-            newLRUNode.val = value;
-            newLRUNode.refToInsertionNode = insertionList.insert_front(key);
-            values.put(key, newLRUNode);
+
+            values.put(key, new LRUNode(value, insertionList.insert_front(key)));
             currentSize += 1;
         }
     }

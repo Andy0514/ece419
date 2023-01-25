@@ -25,17 +25,22 @@ public class FIFOCache extends ICache {
 
     @Override
     public void put(String key, String value) {
-        if (currentSize >= capacity) {
-            // evict
-            String toBeEvicted = insertionList.pop_back();
-            values.remove(toBeEvicted);
-            currentSize -= 1;
-        }
+        boolean replacement = values.containsKey(key);
+        if (replacement) {
+            values.put(key, value);
+        } else {
+            if (currentSize >= capacity) {
+                // evict
+                String toBeEvicted = insertionList.pop_back();
+                values.remove(toBeEvicted);
+                currentSize -= 1;
+            }
 
-        assert currentSize < capacity;
-        insertionList.insert_front(key);
-        values.put(key, value);
-        currentSize += 1;
+            assert currentSize < capacity;
+            insertionList.insert_front(key);
+            values.put(key, value);
+            currentSize += 1;
+        }
     }
 
     @Override

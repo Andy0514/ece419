@@ -2,6 +2,7 @@ package testing;
 
 import app_kvServer.cache.LRUCache;
 import app_kvServer.cache.FIFOCache;
+import app_kvServer.cache.LFUCache;
 import app_kvServer.cache.ICache;
 import client.KVStore;
 import org.junit.Test;
@@ -189,11 +190,14 @@ public class AdditionalTest extends TestCase {
 		test.put("d", "dd");
 		test.put("e", "ee");
 		assertTrue(test.inCache("a") && test.inCache("d") && test.inCache("e"));
-		assertFalse(test.inCache("asdf") && test.inCache("b"));
+		assertFalse(test.inCache("asdf") || test.inCache("b"));
 
 		assertTrue(test.get("d") == "dd");
 		test.put("d", "ee");
 		assertTrue(test.get("d") == "ee");
+
+		// No eviction should have taken place by an update operation
+		assertTrue(test.inCache("a") && test.inCache("d") && test.inCache("e"));
 	}
 
 	@Test
@@ -211,10 +215,44 @@ public class AdditionalTest extends TestCase {
 		test.put("d", "dd");
 		test.put("e", "ee");
 		assertTrue(test.inCache("b") && test.inCache("d") && test.inCache("e"));
-		assertFalse(test.inCache("asdf") && test.inCache("a"));
+		assertFalse(test.inCache("asdf") || test.inCache("a"));
 
 		assertTrue(test.get("d") == "dd");
 		test.put("d", "ee");
 		assertTrue(test.get("d") == "ee");
+
+		// No eviction should have taken place by an update operation
+		assertTrue(test.inCache("b") && test.inCache("d") && test.inCache("e"));
+	}
+
+	@Test
+	public void testLFUCache() throws Exception {
+		ICache test = new LFUCache(3);
+		test.put("asdf", "fdsa");
+		assertTrue(test.get("asdf") == "fdsa");
+
+		test.put("a", "aa");
+		test.put("b", "bb");
+		assertFalse(test.inCache("c"));
+		assertTrue(test.inCache("asdf") && test.inCache("a") && test.inCache("b"));
+
+		test.get("asdf");
+		test.get("asdf");
+		test.get("a");
+
+		// "asdf" has use count 3
+		// "a" has use count 2
+		// "b" has use count 1
+		test.put("d", "dd"); // evict "b", but d's use count is 1
+		test.put("e", "ee"); // evict "d"
+		assertTrue(test.inCache("asdf") && test.inCache("e") && test.inCache("a"));
+		assertFalse(test.inCache("b") || test.inCache("d"));
+
+		assertTrue(test.get("e") == "ee");
+		test.put("e", "ff");
+		assertTrue(test.get("e") == "ff");
+
+		// No eviction should have taken place by an update operation
+		assertTrue(test.inCache("asdf") && test.inCache("e") && test.inCache("a"));
 	}
 }

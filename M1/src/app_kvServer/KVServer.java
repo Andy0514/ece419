@@ -54,19 +54,21 @@ public class KVServer extends Thread implements IKVServer {
 			this.cacheStrategy = CacheStrategy.valueOf(strategy);
 			logger.info("The cache strategy is " + strategy);
 		} catch (IllegalArgumentException e) {
-			logger.info("The specified cache strategy doesn't exist! No cache under current setting.");
+			logger.info("The specified cache strategy doesn't exist, defaulting to using no cache.");
 			this.cacheStrategy = CacheStrategy.None;
 		}
 		// There are four cache strategy in IKVServer.java,
 		// None, LRU, LFU, FIFO
-		if (this.cacheStrategy == CacheStrategy.LRU) {
-			cache = new LRUCache(cacheSize);
-		} else if (this.cacheStrategy == CacheStrategy.LFU) {
-			cache = null;
-		} else if (this.cacheStrategy == CacheStrategy.FIFO) {
-			cache = new FIFOCache(cacheSize);
-		} else {
-			cache = null;
+		switch (cacheStrategy) {
+			case LRU:
+				cache = new LRUCache(cacheSize);
+				break;
+			case FIFO:
+				cache = new FIFOCache(cacheSize);
+			case LFU:
+				cache = new LFUCache(cacheSize);
+			default:
+				cache = null;
 		}
 	}
 
@@ -109,24 +111,41 @@ public class KVServer extends Thread implements IKVServer {
 
 	@Override
 	public boolean inCache(String key){
-		// TODO Auto-generated method stub
-		return false;
+		// cache.inCache does not count as "usage" in LRU
+		if (cache != null) {
+			return cache.inCache(key);
+		} else {
+			return false;
+		}
 	}
 
 	@Override
-	public String getKV(String key) throws Exception{
-		// TODO Auto-generated method stub
+	public String getKV(String key) throws Exception {
+		if (cache != null) {
+			String result = cache.get(key);
+			if (result != null) {
+				return result;
+			}
+		}
+
+		// TODO Not found in cache, search in storage
 		return "";
 	}
 
 	@Override
 	public void putKV(String key, String value) throws Exception {
-		// TODO Auto-generated method stub
+		// TODO Put in file
+
+		if (cache != null) {
+			cache.put(key, value);
+		}
 	}
 
 	@Override
 	public void clearCache(){
-		// TODO Auto-generated method stub
+		if (cache != null) {
+			cache.clear();
+		}
 	}
 
 	@Override
