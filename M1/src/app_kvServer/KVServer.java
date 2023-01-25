@@ -1,5 +1,9 @@
 package app_kvServer;
 
+import app_kvServer.cache.FIFOCache;
+import app_kvServer.cache.ICache;
+import app_kvServer.cache.LFUCache;
+import app_kvServer.cache.LRUCache;
 import client.KVStore;
 import logger.LogSetup;
 import org.apache.log4j.Level;
@@ -39,6 +43,8 @@ public class KVServer extends Thread implements IKVServer {
 	private ServerSocket serverSocket;
 	private ArrayList<ClientConnection> connections;
 
+	private ICache cache;
+
 
 	public KVServer(int port, int cacheSize, String strategy) {
 		// TODO Auto-generated method stub
@@ -53,6 +59,15 @@ public class KVServer extends Thread implements IKVServer {
 		}
 		// There are four cache strategy in IKVServer.java,
 		// None, LRU, LFU, FIFO
+		if (this.cacheStrategy == CacheStrategy.LRU) {
+			cache = new LRUCache(cacheSize);
+		} else if (this.cacheStrategy == CacheStrategy.LFU) {
+			cache = null;
+		} else if (this.cacheStrategy == CacheStrategy.FIFO) {
+			cache = new FIFOCache(cacheSize);
+		} else {
+			cache = null;
+		}
 	}
 
 	@Override

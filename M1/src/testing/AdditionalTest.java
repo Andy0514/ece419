@@ -1,5 +1,8 @@
 package testing;
 
+import app_kvServer.cache.LRUCache;
+import app_kvServer.cache.FIFOCache;
+import app_kvServer.cache.ICache;
 import client.KVStore;
 import org.junit.Test;
 
@@ -169,5 +172,49 @@ public class AdditionalTest extends TestCase {
 		}
 		assertTrue(ex == null && response.getStatus() == KVMessage.StatusType.GET_SUCCESS
 				&& response.getValue().equals(valueTwo));
+	}
+
+	@Test
+	public void testLRUCache() throws Exception {
+		ICache test = new LRUCache(3);
+		test.put("asdf", "fdsa");
+		assertTrue(test.get("asdf") == "fdsa");
+
+		test.put("a", "aa");
+		test.put("b", "bb");
+		assertFalse(test.inCache("c"));
+		assertTrue(test.inCache("asdf") && test.inCache("a") && test.inCache("b"));
+
+		test.get("a");
+		test.put("d", "dd");
+		test.put("e", "ee");
+		assertTrue(test.inCache("a") && test.inCache("d") && test.inCache("e"));
+		assertFalse(test.inCache("asdf") && test.inCache("b"));
+
+		assertTrue(test.get("d") == "dd");
+		test.put("d", "ee");
+		assertTrue(test.get("d") == "ee");
+	}
+
+	@Test
+	public void testFIFOCache() throws Exception {
+		ICache test = new FIFOCache(3);
+		test.put("asdf", "fdsa");
+		assertTrue(test.get("asdf") == "fdsa");
+
+		test.put("a", "aa");
+		test.put("b", "bb");
+		assertFalse(test.inCache("c"));
+		assertTrue(test.inCache("asdf") && test.inCache("a") && test.inCache("b"));
+
+		test.get("a");
+		test.put("d", "dd");
+		test.put("e", "ee");
+		assertTrue(test.inCache("b") && test.inCache("d") && test.inCache("e"));
+		assertFalse(test.inCache("asdf") && test.inCache("a"));
+
+		assertTrue(test.get("d") == "dd");
+		test.put("d", "ee");
+		assertTrue(test.get("d") == "ee");
 	}
 }
